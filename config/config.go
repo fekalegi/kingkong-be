@@ -16,6 +16,7 @@ type mySQLConfig struct {
 	Host     string
 	Port     int
 	Database string
+	DSN      string
 }
 
 func (m *mySQLConfig) GetMySQLConfig() *mySQLConfig {
@@ -35,4 +36,5 @@ func (m *mySQLConfig) InitConfigMysql() {
 	m.Host = os.Getenv("DB_HOST")
 	m.Port = port
 	m.Database = os.Getenv("DB_DATABASE")
+	m.DSN = os.Getenv("DSN")
 }

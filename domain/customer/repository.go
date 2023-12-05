@@ -1,72 +1,68 @@
-package post
+package customer
 
 import (
 	"errors"
 	"gorm.io/gorm"
-	"sharing-vision-2021/common"
+	"kingkong-be/common"
 )
 
 type repository struct {
 	db *gorm.DB
 }
 
-func NewPostRepository(db *gorm.DB) Repository {
+func NewCustomerRepository(db *gorm.DB) Repository {
 	return &repository{
 		db,
 	}
 }
 
-//go:generate mockgen -destination=../../mocks/repository/mock_post_repository.go -package=mock_repository -source=repository.go
+//go:generate mockgen -destination=../../mocks/repository/mock_customer_repository.go -package=mock_repository -source=repository.go
 type Repository interface {
-	AddPost(req *Post) error
-	GetList(limit, offset int, status string) ([]Post, int64, error)
-	Get(id int) (*Post, error)
-	Update(id int, req *Post) error
+	AddCustomer(req *Customer) error
+	GetList(limit, offset int) ([]Customer, int64, error)
+	Get(id int) (*Customer, error)
+	Update(id int, req *Customer) error
 	Delete(id int) error
 }
 
-func (r *repository) AddPost(req *Post) error {
+func (r *repository) AddCustomer(req *Customer) error {
 	return r.db.Create(&req).Error
 }
 
-func (r *repository) GetList(limit, offset int, status string) ([]Post, int64, error) {
-	var posts []Post
+func (r *repository) GetList(limit, offset int) ([]Customer, int64, error) {
+	var customers []Customer
 	var count int64
 
-	query := r.db.Model(&posts)
+	query := r.db.Model(&customers)
 
-	if status != "" {
-		query.Where("status = ?", Status(status))
-	}
-
-	err := query.Offset(offset).Limit(limit).Find(&posts).
+	err := query.Offset(offset).Limit(limit).Find(&customers).
 		Offset(-1).Limit(-1).Count(&count).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, 0, nil
 	} else if err != nil {
-		return []Post{}, 0, err
+		return []Customer{}, 0, err
 	}
 
-	return posts, count, nil
+	return customers, count, nil
 }
 
-func (r *repository) Get(id int) (*Post, error) {
-	post := new(Post)
+func (r *repository) Get(id int) (*Customer, error) {
+	customer := new(Customer)
 
-	if err := r.db.First(post, id).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := r.db.First(customer, id).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, common.ErrRecordNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	return post, nil
+	return customer, nil
 }
 
-func (r *repository) Update(id int, req *Post) error {
+func (r *repository) Update(id int, req *Customer) error {
 	return r.db.Model(req).Where("id = ?", id).Updates(&req).Error
 }
 
 func (r *repository) Delete(id int) error {
-	p := new(Post)
+	p := new(Customer)
 	return r.db.Where("id = ?", id).Delete(p).Error
 }

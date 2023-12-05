@@ -1,4 +1,4 @@
-module sharing-vision-2021
+module kingkong-be
 
 go 1.18
 

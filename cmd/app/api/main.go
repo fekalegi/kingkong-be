@@ -4,13 +4,20 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"kingkong-be/delivery/http/customer"
+	"kingkong-be/delivery/http/part"
+	"kingkong-be/delivery/http/supplier"
+	"kingkong-be/delivery/http/user"
+	"kingkong-be/initiator"
 	"net/http"
 	"os"
 	"path/filepath"
-	"sharing-vision-2021/delivery/http/post"
-	postDomain "sharing-vision-2021/domain/post"
-	"sharing-vision-2021/initiator"
 	"strings"
+
+	customerDomain "kingkong-be/domain/customer"
+	partDomain "kingkong-be/domain/part"
+	supplierDomain "kingkong-be/domain/supplier"
+	userDomain "kingkong-be/domain/user"
 )
 
 func main() {
@@ -40,19 +47,33 @@ func main() {
 		})
 	})
 
-	postRepo := postDomain.NewPostRepository(db)
-	newPostService := postDomain.NewPostImplementation(postRepo)
-	postController := post.NewPostController(newPostService)
+	customerRepo := customerDomain.NewCustomerRepository(db)
+	newCustomerService := customerDomain.NewCustomerImplementation(customerRepo)
+	customerController := customer.NewCustomerController(newCustomerService)
+	customerController.Route(api)
 
-	postController.Route(api)
+	partRepo := partDomain.NewPartRepository(db)
+	newPartService := partDomain.NewPartImplementation(partRepo)
+	partController := part.NewPartController(newPartService)
+	partController.Route(api)
+
+	supplierRepo := supplierDomain.NewSupplierRepository(db)
+	newSupplierService := supplierDomain.NewSupplierImplementation(supplierRepo)
+	supplierController := supplier.NewSupplierController(newSupplierService)
+	supplierController.Route(api)
+
+	userRepo := userDomain.NewUserRepository(db)
+	newUserService := userDomain.NewUserImplementation(userRepo)
+	userController := user.NewUserController(newUserService)
+	userController.Route(api)
 
 	r.Run("localhost:7000")
 }
 
 func LoadEnvVars() {
 	cwd, _ := os.Getwd()
-	dirString := strings.Split(cwd, "sharing-vision-2021")
-	dir := strings.Join([]string{dirString[0], "sharing-vision-2021"}, "")
+	dirString := strings.Split(cwd, "kingkong-be")
+	dir := strings.Join([]string{dirString[0], "kingkong-be"}, "")
 	AppPath := dir
 
 	godotenv.Load(filepath.Join(AppPath, "/.env"))

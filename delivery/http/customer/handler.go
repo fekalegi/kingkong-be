@@ -1,18 +1,18 @@
-package post
+package customer
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"kingkong-be/common"
+	"kingkong-be/config/validator"
+	"kingkong-be/delivery/http/customer/model"
+	"kingkong-be/domain/customer"
 	"net/http"
-	"sharing-vision-2021/common"
-	"sharing-vision-2021/config/validator"
-	"sharing-vision-2021/delivery/http/post/model"
-	"sharing-vision-2021/domain/post"
 	"strconv"
 )
 
 func (c *controller) Add(ctx *gin.Context) {
-	bodyRequest := new(model.Post)
+	bodyRequest := new(model.Customer)
 	if err := ctx.BindJSON(bodyRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, common.ErrorResponse(err.Error()))
 		return
@@ -23,10 +23,10 @@ func (c *controller) Add(ctx *gin.Context) {
 		return
 	}
 
-	p := new(post.Post)
-	mapRequestAddPost(bodyRequest, p)
+	p := new(customer.Customer)
+	mapRequestAddCustomer(bodyRequest, p)
 
-	if err := c.postService.AddPost(p); err != nil {
+	if err := c.customerService.AddCustomer(p); err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
 		return
 	}
@@ -48,7 +48,7 @@ func (c *controller) GetList(ctx *gin.Context) {
 		return
 	}
 
-	datas, counts, err := c.postService.GetList(query.Limit, query.Offset, query.Status)
+	datas, counts, err := c.customerService.GetList(query.Limit, query.Offset)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
 		return
@@ -78,7 +78,7 @@ func (c *controller) Get(ctx *gin.Context) {
 		return
 	}
 
-	data, err := c.postService.Get(convID)
+	data, err := c.customerService.Get(convID)
 	if err != nil && errors.Is(err, common.ErrRecordNotFound) {
 		ctx.JSON(http.StatusNotFound, common.ErrorResponse(err.Error()))
 		return
@@ -104,7 +104,7 @@ func (c *controller) Update(ctx *gin.Context) {
 		return
 	}
 
-	bodyRequest := new(model.Post)
+	bodyRequest := new(model.Customer)
 	if err := ctx.BindJSON(bodyRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, common.ErrorResponse(err.Error()))
 		return
@@ -115,10 +115,10 @@ func (c *controller) Update(ctx *gin.Context) {
 		return
 	}
 
-	p := new(post.Post)
-	mapRequestAddPost(bodyRequest, p)
+	p := new(customer.Customer)
+	mapRequestAddCustomer(bodyRequest, p)
 
-	if err := c.postService.Update(convID, p); err != nil && errors.Is(err, common.ErrRecordNotFound) {
+	if err := c.customerService.Update(convID, p); err != nil && errors.Is(err, common.ErrRecordNotFound) {
 		ctx.JSON(http.StatusNotFound, common.ErrorResponse(err.Error()))
 		return
 	} else if err != nil {
@@ -143,7 +143,7 @@ func (c *controller) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.postService.Delete(convID); err != nil && errors.Is(err, common.ErrRecordNotFound) {
+	if err := c.customerService.Delete(convID); err != nil && errors.Is(err, common.ErrRecordNotFound) {
 		ctx.JSON(http.StatusNotFound, common.ErrorResponse(err.Error()))
 		return
 	} else if err != nil {

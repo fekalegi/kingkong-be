@@ -5,8 +5,8 @@
 package mock_repository
 
 import (
+	post "kingkong-be/domain/customer"
 	reflect "reflect"
-	post "sharing-vision-2021/domain/post"
 
 	gomock "github.com/golang/mock/gomock"
 )

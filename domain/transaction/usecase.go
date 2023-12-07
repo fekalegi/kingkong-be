@@ -16,6 +16,11 @@ type Service interface {
 	Get(id int) (*Transaction, error)
 	Update(id int, req *Transaction) error
 	Delete(id int) error
+	AddBatchTransactionPart(transaction []TransactionPart) error
+	GetListPart(limit, offset int) ([]TransactionPart, int64, error)
+	GetPart(id int) (*TransactionPart, error)
+	UpdateBatchPart(id int, req []TransactionPart) error
+	DeletePart(id int) error
 }
 
 func (u *transactionImplementation) AddTransaction(req *Transaction) error {
@@ -45,4 +50,33 @@ func (u *transactionImplementation) Delete(id int) error {
 	}
 
 	return u.repo.Delete(id)
+}
+
+func (u *transactionImplementation) AddBatchTransactionPart(req []TransactionPart) error {
+	return u.repo.AddBatchTransactionPart(req)
+}
+
+func (u *transactionImplementation) GetListPart(limit, offset int) ([]TransactionPart, int64, error) {
+	return u.repo.GetListPart(limit, offset)
+}
+
+func (u *transactionImplementation) GetPart(id int) (*TransactionPart, error) {
+	return u.repo.GetPart(id)
+}
+
+func (u *transactionImplementation) UpdateBatchPart(id int, req []TransactionPart) error {
+	err := u.repo.DeletePartsByTransactionID(id)
+	if err != nil {
+		return err
+	}
+
+	return u.repo.AddBatchTransactionPart(req)
+}
+
+func (u *transactionImplementation) DeletePart(id int) error {
+	if _, err := u.repo.GetPart(id); err != nil {
+		return err
+	}
+
+	return u.repo.DeletePart(id)
 }

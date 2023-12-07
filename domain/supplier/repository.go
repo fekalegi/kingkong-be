@@ -59,10 +59,10 @@ func (r *repository) Get(id int) (*Supplier, error) {
 }
 
 func (r *repository) Update(id int, req *Supplier) error {
-	return r.db.Model(req).Where("id = ?", id).Updates(&req).Error
+	return r.db.Model(req).Where("supplier_id = ?", id).Updates(&req).Error
 }
 
 func (r *repository) Delete(id int) error {
 	p := new(Supplier)
-	return r.db.Where("id = ?", id).Delete(p).Error
+	return r.db.Where("supplier_id = ?", id).Delete(p).Error
 }

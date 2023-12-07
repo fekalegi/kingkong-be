@@ -6,9 +6,9 @@ import (
 
 type Customer struct {
 	CustomerID   int        `json:"customer_id" gorm:"primaryKey;autoIncrement"`
-	CustomerName string     `json:"title"`
-	PhoneNumber  string     `json:"content"`
-	Email        string     `json:"category"`
+	CustomerName string     `json:"customer_name"`
+	PhoneNumber  string     `json:"phone_number"`
+	Email        string     `json:"email"`
 	CreatedDate  *time.Time `json:"created_date" gorm:"autoCreateTime"`
 	UpdatedDate  *time.Time `json:"updated_date" gorm:"autoUpdateTime"`
 }

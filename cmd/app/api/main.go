@@ -2,14 +2,12 @@ package main
 
 import (
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"kingkong-be/delivery/http/customer"
 	"kingkong-be/delivery/http/part"
 	"kingkong-be/delivery/http/supplier"
 	"kingkong-be/delivery/http/user"
 	"kingkong-be/initiator"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,25 +25,13 @@ func main() {
 	r := i.GetGin()
 	db := i.GetDB()
 	api := r.Group("/api")
+	// CORS middleware setup allowing all origins
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 
-	r.Use(cors.Default())
-
-	r.GET("/ping", func(c *gin.Context) {
-		sqlDB, err := db.DB()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
-			})
-		}
-		if err = sqlDB.Ping(); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
-			})
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	r.Use(cors.New(config))
 
 	customerRepo := customerDomain.NewCustomerRepository(db)
 	newCustomerService := customerDomain.NewCustomerImplementation(customerRepo)

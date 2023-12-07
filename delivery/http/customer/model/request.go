@@ -2,9 +2,9 @@ package model
 
 type Customer struct {
 	CustomerID   int    `json:"customer_id"`
-	CustomerName string `json:"title"`
-	PhoneNumber  string `json:"content"`
-	Email        string `json:"category"`
+	CustomerName string `json:"customer_name"`
+	PhoneNumber  string `json:"phone_number"`
+	Email        string `json:"email"`
 }
 
 type List struct {

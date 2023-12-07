@@ -23,11 +23,12 @@ type Repository interface {
 	Get(id int) (*Transaction, error)
 	Update(id int, req *Transaction) error
 	Delete(id int) error
-	AddTransactionPart(req *TransactionPart) error
+	AddBatchTransactionPart(req []TransactionPart) error
 	GetListPart(limit, offset int) ([]TransactionPart, int64, error)
 	GetPart(id int) (*TransactionPart, error)
 	UpdatePart(id int, req *TransactionPart) error
 	DeletePart(id int) error
+	DeletePartsByTransactionID(id int) error
 }
 
 func (r *repository) AddTransaction(req *Transaction) error {
@@ -72,7 +73,7 @@ func (r *repository) Delete(id int) error {
 	return r.db.Where("id = ?", id).Delete(p).Error
 }
 
-func (r *repository) AddTransactionPart(req *TransactionPart) error {
+func (r *repository) AddBatchTransactionPart(req []TransactionPart) error {
 	return r.db.Create(&req).Error
 }
 
@@ -112,4 +113,9 @@ func (r *repository) UpdatePart(id int, req *TransactionPart) error {
 func (r *repository) DeletePart(id int) error {
 	p := new(TransactionPart)
 	return r.db.Where("id = ?", id).Delete(p).Error
+}
+
+func (r *repository) DeletePartsByTransactionID(id int) error {
+	p := new(TransactionPart)
+	return r.db.Where("transaction_id = ?", id).Delete(p).Error
 }

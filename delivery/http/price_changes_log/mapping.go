@@ -1,4 +1,4 @@
-package part
+package price_changes_log
 
 import (
 	"kingkong-be/delivery/http/part/model"

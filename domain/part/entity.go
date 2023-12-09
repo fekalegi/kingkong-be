@@ -5,7 +5,9 @@ import (
 )
 
 type Part struct {
-	PartID        int        `json:"id" gorm:"primaryKey;autoIncrement"`
+	PartID        int        `json:"part_id" gorm:"primaryKey;autoIncrement"`
+	SupplierID    int        `json:"supplier_id"`
+	SupplierName  string     `json:"supplier_name" gorm:"->"`
 	PartName      string     `json:"part_name"`
 	Price         float64    `json:"price"`
 	StockQuantity int        `json:"stock_quantity"`

@@ -5,7 +5,9 @@ import (
 	"github.com/joho/godotenv"
 	"kingkong-be/delivery/http/customer"
 	"kingkong-be/delivery/http/part"
+	"kingkong-be/delivery/http/price_changes_log"
 	"kingkong-be/delivery/http/supplier"
+	"kingkong-be/delivery/http/transaction"
 	"kingkong-be/delivery/http/user"
 	"kingkong-be/initiator"
 	"os"
@@ -14,7 +16,9 @@ import (
 
 	customerDomain "kingkong-be/domain/customer"
 	partDomain "kingkong-be/domain/part"
+	priceLog "kingkong-be/domain/price_changes_log"
 	supplierDomain "kingkong-be/domain/supplier"
+	transactionDomain "kingkong-be/domain/transaction"
 	userDomain "kingkong-be/domain/user"
 )
 
@@ -52,6 +56,16 @@ func main() {
 	newUserService := userDomain.NewUserImplementation(userRepo)
 	userController := user.NewUserController(newUserService)
 	userController.Route(api)
+
+	priceChangesLogRepo := priceLog.NewPriceChangesLogRepository(db)
+	newPriceChangeService := priceLog.NewPriceChangesLogImplementation(priceChangesLogRepo)
+	pcLogController := price_changes_log.NewPriceChangesController(newPriceChangeService)
+	pcLogController.Route(api)
+
+	transactionRepo := transactionDomain.NewTransactionRepository(db)
+	newTransactionService := transactionDomain.NewTransactionImplementation(transactionRepo, partRepo, priceChangesLogRepo)
+	transactionController := transaction.NewTransactionController(newTransactionService)
+	transactionController.Route(api)
 
 	r.Run("localhost:7000")
 }

@@ -23,6 +23,7 @@ type Repository interface {
 	Get(id int) (*Part, error)
 	Update(id int, req *Part) error
 	Delete(id int) error
+	UpdateStockByID(id int, stock int) error
 }
 
 func (r *repository) AddPart(req *Part) error {
@@ -35,7 +36,10 @@ func (r *repository) GetList(limit, offset int) ([]Part, int64, error) {
 
 	query := r.db.Model(&parts)
 
-	err := query.Offset(offset).Limit(limit).Find(&parts).
+	err := query.Offset(offset).Limit(limit).
+		Joins("LEFT JOIN suppliers s ON s.supplier_id = parts.supplier_id").
+		Select("s.supplier_name, parts.*").
+		Find(&parts).
 		Offset(-1).Limit(-1).Count(&count).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, 0, nil
@@ -49,7 +53,10 @@ func (r *repository) GetList(limit, offset int) ([]Part, int64, error) {
 func (r *repository) Get(id int) (*Part, error) {
 	part := new(Part)
 
-	if err := r.db.First(part, id).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := r.db.
+		Joins("LEFT JOIN suppliers s ON s.supplier_id = parts.supplier_id").
+		Select("s.supplier_name, parts.*").
+		First(part, id).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, common.ErrRecordNotFound
 	} else if err != nil {
 		return nil, err
@@ -59,10 +66,14 @@ func (r *repository) Get(id int) (*Part, error) {
 }
 
 func (r *repository) Update(id int, req *Part) error {
-	return r.db.Model(req).Where("id = ?", id).Updates(&req).Error
+	return r.db.Model(req).Where("part_id = ?", id).Updates(&req).Error
 }
 
 func (r *repository) Delete(id int) error {
 	p := new(Part)
-	return r.db.Where("id = ?", id).Delete(p).Error
+	return r.db.Where("part_id = ?", id).Delete(p).Error
+}
+
+func (r *repository) UpdateStockByID(id int, stock int) error {
+	return r.db.Exec("UPDATE parts SET stock_quantity = stock_quantity + ? WHERE part_id = ?", stock, id).Error
 }

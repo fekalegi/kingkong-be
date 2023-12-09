@@ -33,12 +33,12 @@ func (c *controller) Add(ctx *gin.Context) {
 		parts = append(parts, *tmpParts)
 	}
 
-	if err := c.transactionService.AddTransaction(p); err != nil {
-		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
-		return
+	req := &transaction.RequestInsertTransaction{
+		Transaction:      *p,
+		TransactionParts: parts,
 	}
 
-	if err := c.transactionService.AddBatchTransactionPart(parts); err != nil {
+	if err := c.transactionService.AddTransaction(req); err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
 		return
 	}
@@ -60,7 +60,7 @@ func (c *controller) GetList(ctx *gin.Context) {
 		return
 	}
 
-	datas, counts, err := c.transactionService.GetList(query.Limit, query.Offset)
+	datas, counts, err := c.transactionService.GetList(query.Limit, query.Offset, query.Type)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
 		return

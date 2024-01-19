@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"kingkong-be/auth"
 	"kingkong-be/common"
 	"kingkong-be/config/validator"
 	"kingkong-be/delivery/http/user/model"
@@ -153,4 +154,49 @@ func (c *controller) Delete(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, common.SuccessResponseNoData("success"))
 	return
+}
+
+func (c *controller) Login(ctx *gin.Context) {
+	bodyRequest := new(model.LoginRequest)
+	if err := ctx.BindJSON(bodyRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, common.ErrorResponse(err.Error()))
+		return
+	}
+
+	if err := validator.ValidateStruct(bodyRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, common.BadRequestResponse(err))
+		return
+	}
+
+	data, err := c.userService.Login(bodyRequest.Username, bodyRequest.Password)
+	if err != nil && errors.Is(err, common.ErrRecordNotFound) {
+		ctx.JSON(http.StatusNotFound, common.ErrorResponse(err.Error()))
+		return
+	} else if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.ErrorResponse(err.Error()))
+		return
+	}
+
+	token, err := auth.CreateToken(data)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, common.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, common.SuccessResponseWithData(model.LoginResponse{AccessToken: token}, "success"))
+	return
+}
+
+func (c *controller) GetMeFromToken(ctx *gin.Context) {
+	userID := ctx.GetInt("user_id")
+	username := ctx.GetString("username")
+	role := ctx.GetInt("role")
+
+	u := &user.User{
+		UserID:   userID,
+		Username: username,
+		Role:     role,
+	}
+
+	ctx.JSON(http.StatusOK, common.SuccessResponseWithData(u, "success"))
 }

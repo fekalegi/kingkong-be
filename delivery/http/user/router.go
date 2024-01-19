@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
+	"kingkong-be/auth"
 	"kingkong-be/domain/user"
 )
 
@@ -21,4 +22,7 @@ func (c *controller) Route(e *gin.RouterGroup) {
 	v1.GET("/user/", c.GetList)
 	v1.PUT("/user/:id", c.Update)
 	v1.DELETE("/user/:id", c.Delete)
+
+	v1.POST("/auth/", c.Login)
+	v1.GET("/auth/", auth.ValidateTokenMiddleware, c.GetMeFromToken)
 }

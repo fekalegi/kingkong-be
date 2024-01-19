@@ -23,6 +23,7 @@ type Repository interface {
 	Get(id int) (*User, error)
 	Update(id int, req *User) error
 	Delete(id int) error
+	GetByUsername(username string) (*User, error)
 }
 
 func (r *repository) AddUser(req *User) error {
@@ -65,4 +66,16 @@ func (r *repository) Update(id int, req *User) error {
 func (r *repository) Delete(id int) error {
 	p := new(User)
 	return r.db.Where("id = ?", id).Delete(p).Error
+}
+
+func (r *repository) GetByUsername(username string) (*User, error) {
+	user := new(User)
+
+	if err := r.db.Where("username = ?", username).First(user).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, common.ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -12,3 +12,8 @@ type List struct {
 	Offset int    `form:"offset" validate:"min=0"`
 	Status string `form:"status" validate:"oneof='publish' 'draft' 'thrash' ''"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

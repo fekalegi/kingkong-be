@@ -1,5 +1,10 @@
 package user
 
+import (
+	"errors"
+	"kingkong-be/helper"
+)
+
 type userImplementation struct {
 	repo Repository
 }
@@ -16,6 +21,7 @@ type Service interface {
 	Get(id int) (*User, error)
 	Update(id int, req *User) error
 	Delete(id int) error
+	Login(username, password string) (*User, error)
 }
 
 func (u *userImplementation) AddUser(req *User) error {
@@ -45,4 +51,17 @@ func (u *userImplementation) Delete(id int) error {
 	}
 
 	return u.repo.Delete(id)
+}
+
+func (u *userImplementation) Login(username, password string) (*User, error) {
+	us, err := u.repo.GetByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	if helper.GetMD5String(password) != us.Password {
+		return nil, errors.New("password doesnt match")
+	}
+
+	return us, nil
 }

@@ -14,3 +14,13 @@ func LoadLocationJakarta() *time.Location {
 	jakartaLocation, _ := time.LoadLocation("Asia/Jakarta")
 	return jakartaLocation
 }
+
+func GetWeekdays(req time.Time) int {
+	wd := req.Weekday()
+	switch req.Weekday() {
+	case 1, 2, 3, 4, 5, 6:
+		return int(wd + 1)
+	default:
+		return 0
+	}
+}

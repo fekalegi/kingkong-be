@@ -1,6 +1,9 @@
 package transaction
 
 import (
+	"kingkong-be/common"
+	"kingkong-be/helper"
+	"log"
 	"time"
 )
 
@@ -47,6 +50,86 @@ type RequestInsertTransaction struct {
 	TransactionParts []TransactionPart `json:"transaction_parts"`
 }
 
+type ResponseChart struct {
+	WeeklyChartSales     []WeeklyChart  `json:"weekly_chart_sales"`
+	WeeklyChartPurchase  []WeeklyChart  `json:"weekly_chart_purchase"`
+	MonthlyChartSales    []MonthlyChart `json:"monthly_chart_sales"`
+	MonthlyChartPurchase []MonthlyChart `json:"monthly_chart_purchase"`
+}
+
+type WeeklyChart struct {
+	DayOfWeek int     `json:"day_of_week"`
+	Day       string  `json:"day"`
+	Sum       float64 `json:"sum"`
+}
+
+type MonthlyChart struct {
+	Month    int     `json:"month"`
+	MonthStr string  `json:"month_str"`
+	Sum      float64 `json:"sum"`
+}
+
 func (tr *TransactionReport) TableName() string {
 	return "transactions"
+}
+
+func generateEmptyWeeklyChart(wc []WeeklyChart) []WeeklyChart {
+	var res []WeeklyChart
+	m := make(map[int]float64)
+	for _, v := range wc {
+		m[v.DayOfWeek] = v.Sum
+	}
+	log.Printf("%+v", m)
+
+	for i := 1; i <= 7; i++ {
+		now := time.Now()
+		sum := 0.00
+
+		if i > 1 {
+			now = now.AddDate(0, 0, (i-1)*-1)
+		}
+
+		_, ok := m[helper.GetWeekdays(now)]
+		if ok {
+			sum = m[helper.GetWeekdays(now)]
+		}
+
+		res = append(res, WeeklyChart{
+			DayOfWeek: int(now.Weekday()),
+			Day:       common.Days[int(now.Weekday())],
+			Sum:       sum,
+		})
+	}
+
+	return res
+}
+
+func generateEmptyMonthlyChart(wc []MonthlyChart) []MonthlyChart {
+	var res []MonthlyChart
+	m := make(map[int]float64)
+	for _, v := range wc {
+		m[v.Month] = v.Sum
+	}
+
+	for i := 1; i <= 12; i++ {
+		now := time.Now()
+		sum := 0.00
+
+		if i > 1 {
+			now = now.AddDate(0, (i-1)*-1, 0)
+		}
+
+		_, ok := m[i]
+		if ok {
+			sum = m[i]
+		}
+
+		res = append(res, MonthlyChart{
+			Month:    int(now.Month()),
+			MonthStr: common.Month[int(now.Month())],
+			Sum:      sum,
+		})
+	}
+
+	return res
 }

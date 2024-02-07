@@ -81,7 +81,7 @@ func generateEmptyWeeklyChart(wc []WeeklyChart) []WeeklyChart {
 	}
 	log.Printf("%+v", m)
 
-	for i := 1; i <= 7; i++ {
+	for i := 7; i >= 1; i-- {
 		now := time.Now()
 		sum := 0.00
 
@@ -109,24 +109,28 @@ func generateEmptyMonthlyChart(wc []MonthlyChart) []MonthlyChart {
 	m := make(map[int]float64)
 	for _, v := range wc {
 		m[v.Month] = v.Sum
+		log.Printf("KOKOK %+v", v)
 	}
 
-	for i := 1; i <= 12; i++ {
-		now := time.Now()
+	now := time.Now().Month()
+	for i := 11; i >= 0; i-- {
+		month := int(now) - i
 		sum := 0.00
+		log.Println(month, int(now), i)
 
-		if i > 1 {
-			now = now.AddDate(0, (i-1)*-1, 0)
+		if month <= 0 {
+			month += 12
 		}
+		log.Println("KEDUA", month)
 
-		_, ok := m[i]
+		_, ok := m[month]
 		if ok {
-			sum = m[i]
+			sum = m[month]
 		}
 
 		res = append(res, MonthlyChart{
-			Month:    int(now.Month()),
-			MonthStr: common.Month[int(now.Month())],
+			Month:    month,
+			MonthStr: common.Month[int(month)],
 			Sum:      sum,
 		})
 	}

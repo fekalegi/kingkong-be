@@ -7,6 +7,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"kingkong-be/config"
+	customerDomain "kingkong-be/domain/customer"
+	partDomain "kingkong-be/domain/part"
+	"kingkong-be/domain/price_changes_log"
+	supplierDomain "kingkong-be/domain/supplier"
+	"kingkong-be/domain/transaction"
+	userDomain "kingkong-be/domain/user"
 	"log"
 )
 
@@ -56,6 +62,12 @@ func (i *initiator) initDB() {
 	}), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
+	}
+
+	// Auto Migrate
+	err = db.AutoMigrate(&userDomain.User{}, &customerDomain.Customer{}, &partDomain.Part{}, &supplierDomain.Supplier{}, &price_changes_log.PriceChangesLog{}, &transaction.Transaction{}, &transaction.TransactionPart{})
+	if err != nil {
+		log.Println("failed to migrate DB : ", err)
 	}
 
 	i.db = db

@@ -21,4 +21,6 @@ func (c *controller) Route(e *gin.RouterGroup) {
 	v1.GET("/transaction/", c.GetList)
 	v1.PUT("/transaction/:id", c.Update)
 	v1.DELETE("/transaction/:id", c.Delete)
+
+	v1.GET("/chart", c.GetChart)
 }

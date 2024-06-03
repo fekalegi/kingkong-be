@@ -1,6 +1,9 @@
 package transaction
 
 import (
+	"kingkong-be/common"
+	"kingkong-be/helper"
+	"log"
 	"time"
 )
 
@@ -47,6 +50,90 @@ type RequestInsertTransaction struct {
 	TransactionParts []TransactionPart `json:"transaction_parts"`
 }
 
+type ResponseChart struct {
+	WeeklyChartSales     []WeeklyChart  `json:"weekly_chart_sales"`
+	WeeklyChartPurchase  []WeeklyChart  `json:"weekly_chart_purchase"`
+	MonthlyChartSales    []MonthlyChart `json:"monthly_chart_sales"`
+	MonthlyChartPurchase []MonthlyChart `json:"monthly_chart_purchase"`
+}
+
+type WeeklyChart struct {
+	DayOfWeek int     `json:"day_of_week"`
+	Day       string  `json:"day"`
+	Sum       float64 `json:"sum"`
+}
+
+type MonthlyChart struct {
+	Month    int     `json:"month"`
+	MonthStr string  `json:"month_str"`
+	Sum      float64 `json:"sum"`
+}
+
 func (tr *TransactionReport) TableName() string {
 	return "transactions"
+}
+
+func generateEmptyWeeklyChart(wc []WeeklyChart) []WeeklyChart {
+	var res []WeeklyChart
+	m := make(map[int]float64)
+	for _, v := range wc {
+		m[v.DayOfWeek] = v.Sum
+	}
+	log.Printf("%+v", m)
+
+	for i := 7; i >= 1; i-- {
+		now := time.Now()
+		sum := 0.00
+
+		if i > 1 {
+			now = now.AddDate(0, 0, (i-1)*-1)
+		}
+
+		_, ok := m[helper.GetWeekdays(now)]
+		if ok {
+			sum = m[helper.GetWeekdays(now)]
+		}
+
+		res = append(res, WeeklyChart{
+			DayOfWeek: int(now.Weekday()),
+			Day:       common.Days[int(now.Weekday())],
+			Sum:       sum,
+		})
+	}
+
+	return res
+}
+
+func generateEmptyMonthlyChart(wc []MonthlyChart) []MonthlyChart {
+	var res []MonthlyChart
+	m := make(map[int]float64)
+	for _, v := range wc {
+		m[v.Month] = v.Sum
+		log.Printf("KOKOK %+v", v)
+	}
+
+	now := time.Now().Month()
+	for i := 11; i >= 0; i-- {
+		month := int(now) - i
+		sum := 0.00
+		log.Println(month, int(now), i)
+
+		if month <= 0 {
+			month += 12
+		}
+		log.Println("KEDUA", month)
+
+		_, ok := m[month]
+		if ok {
+			sum = m[month]
+		}
+
+		res = append(res, MonthlyChart{
+			Month:    month,
+			MonthStr: common.Month[int(month)],
+			Sum:      sum,
+		})
+	}
+
+	return res
 }

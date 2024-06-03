@@ -29,6 +29,8 @@ type Repository interface {
 	UpdatePart(id int, req *TransactionPart) error
 	DeletePart(id int) error
 	DeletePartsByTransactionID(id int) error
+	GetSum7DaysBefore(status string) ([]WeeklyChart, error)
+	GetSumMonthly(status string) ([]MonthlyChart, error)
 }
 
 func (r *repository) AddTransaction(req *Transaction) error {
@@ -132,4 +134,36 @@ func (r *repository) DeletePart(id int) error {
 func (r *repository) DeletePartsByTransactionID(id int) error {
 	p := new(TransactionPart)
 	return r.db.Where("transaction_id = ?", id).Delete(p).Error
+}
+
+func (r *repository) GetSum7DaysBefore(status string) ([]WeeklyChart, error) {
+	var res []WeeklyChart
+
+	if err := r.db.Raw(
+		"SELECT DAYOFWEEK(transaction_date) as day_of_week,  SUM(total_price) as sum "+
+			"FROM transactions WHERE transaction_type = ? AND transaction_date >= CURRENT_DATE - INTERVAL 7 DAY "+
+			"GROUP BY day_of_week "+
+			"ORDER BY  day_of_week;", status).Scan(&res).Error; err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (r *repository) GetSumMonthly(status string) ([]MonthlyChart, error) {
+	var res []MonthlyChart
+
+	if err := r.db.Raw(
+		"SELECT EXTRACT(YEAR_MONTH FROM transaction_date) AS month_year ,"+
+			"EXTRACT(MONTH FROM transaction_date)      AS month,"+
+			"SUM(total_price)                          AS sum "+
+			"FROM transactions "+
+			"WHERE transaction_type = ? "+
+			"AND transaction_date >= CURRENT_DATE - INTERVAL 12 MONTH "+
+			"GROUP BY month_year "+
+			"ORDER BY month_year;", status).Scan(&res).Error; err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

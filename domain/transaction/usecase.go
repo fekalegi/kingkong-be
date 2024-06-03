@@ -32,6 +32,10 @@ type Service interface {
 	GetPart(id int) (*TransactionPart, error)
 	UpdateBatchPart(id int, req []TransactionPart) error
 	DeletePart(id int) error
+	GetSumSales7DaysBefore() ([]WeeklyChart, error)
+	GetSumPurchase7DaysBefore() ([]WeeklyChart, error)
+	GetSumSalesMonthly() ([]MonthlyChart, error)
+	GetSumPurchaseMonthly() ([]MonthlyChart, error)
 }
 
 func (u *transactionImplementation) AddTransaction(req *RequestInsertTransaction) error {
@@ -45,6 +49,7 @@ func (u *transactionImplementation) AddTransaction(req *RequestInsertTransaction
 	totalPrice := 0.00
 	for k, v := range req.TransactionParts {
 		totalPrice += v.Price * float64(v.Quantity)
+		quantity := v.Quantity
 		pt, err := u.partRepo.Get(v.PartID)
 		if err != nil {
 			return err
@@ -66,10 +71,17 @@ func (u *transactionImplementation) AddTransaction(req *RequestInsertTransaction
 		}
 
 		if req.Transaction.TransactionType == common.Sales {
-			v.Quantity = -1 * v.Quantity
+			quantity = -1 * v.Quantity
 		}
 
-		err = u.partRepo.UpdateStockByID(v.PartID, v.Quantity)
+		err = u.partRepo.UpdateStockByID(v.PartID, quantity)
+		if err != nil {
+			return err
+		}
+
+		err = u.partRepo.Update(v.PartID, &part.Part{
+			Price: v.Price,
+		})
 		if err != nil {
 			return err
 		}
@@ -164,4 +176,36 @@ func (u *transactionImplementation) DeletePart(id int) error {
 	}
 
 	return u.repo.DeletePart(id)
+}
+
+func (u *transactionImplementation) GetSumSales7DaysBefore() ([]WeeklyChart, error) {
+	wcs, err := u.repo.GetSum7DaysBefore("sales")
+	if err != nil {
+		return nil, err
+	}
+	return generateEmptyWeeklyChart(wcs), err
+}
+
+func (u *transactionImplementation) GetSumPurchase7DaysBefore() ([]WeeklyChart, error) {
+	wcs, err := u.repo.GetSum7DaysBefore("purchase")
+	if err != nil {
+		return nil, err
+	}
+	return generateEmptyWeeklyChart(wcs), err
+}
+
+func (u *transactionImplementation) GetSumSalesMonthly() ([]MonthlyChart, error) {
+	wcs, err := u.repo.GetSumMonthly("sales")
+	if err != nil {
+		return nil, err
+	}
+	return generateEmptyMonthlyChart(wcs), err
+}
+
+func (u *transactionImplementation) GetSumPurchaseMonthly() ([]MonthlyChart, error) {
+	wcs, err := u.repo.GetSumMonthly("purchase")
+	if err != nil {
+		return nil, err
+	}
+	return generateEmptyMonthlyChart(wcs), err
 }

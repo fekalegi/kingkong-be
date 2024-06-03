@@ -181,3 +181,37 @@ func (c *controller) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SuccessResponseNoData("success"))
 	return
 }
+
+func (c *controller) GetChart(ctx *gin.Context) {
+	var resp transaction.ResponseChart
+	salesWeeklyChart, err := c.transactionService.GetSumSales7DaysBefore()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	purchaseWeeklyChart, err := c.transactionService.GetSumPurchase7DaysBefore()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	salesMonthlyChart, err := c.transactionService.GetSumSalesMonthly()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	purchaseMonthlyChart, err := c.transactionService.GetSumPurchaseMonthly()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	resp.WeeklyChartSales = salesWeeklyChart
+	resp.WeeklyChartPurchase = purchaseWeeklyChart
+	resp.MonthlyChartSales = salesMonthlyChart
+	resp.MonthlyChartPurchase = purchaseMonthlyChart
+	ctx.JSON(http.StatusOK, common.SuccessResponseWithData(resp, "success"))
+
+}

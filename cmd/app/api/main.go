@@ -30,11 +30,13 @@ func main() {
 	db := i.GetDB()
 	api := r.Group("/api")
 	// CORS middleware setup allowing all origins
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
-
+	config := cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Update with your Next.js frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}
 	r.Use(cors.New(config))
 
 	customerRepo := customerDomain.NewCustomerRepository(db)

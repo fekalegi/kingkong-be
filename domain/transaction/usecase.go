@@ -74,6 +74,13 @@ func (u *transactionImplementation) AddTransaction(req *RequestInsertTransaction
 			return err
 		}
 
+		err = u.partRepo.Update(v.PartID, &part.Part{
+			Price: v.Price,
+		})
+		if err != nil {
+			return err
+		}
+
 		req.TransactionParts[k].TransactionID = id
 	}
 
